@@ -1,0 +1,29 @@
+# Dark text on the pastel blocks of Ghostty's palette, which the defaults
+# make unreadable.
+
+[mode]
+normal_main = { fg = "black", bg = "blue", bold = true }
+normal_alt  = { fg = "blue", bg = "darkgray" }
+select_main = { fg = "black", bg = "red", bold = true }
+select_alt  = { fg = "red", bg = "darkgray" }
+unset_main  = { fg = "black", bg = "red", bold = true }
+unset_alt   = { fg = "red", bg = "darkgray" }
+
+[tabs]
+active   = { fg = "black", bg = "blue", bold = true }
+inactive = { fg = "blue", bg = "darkgray" }
+
+[mgr]
+count_copied   = { fg = "black", bg = "green" }
+count_cut      = { fg = "black", bg = "red" }
+count_selected = { fg = "black", bg = "yellow" }
+
+[status]
+progress_error = { fg = "black", bg = "red" }
+
+[filetype]
+prepend_rules = [
+	{ url = "*", is = "orphan", fg = "black", bg = "red" },
+	{ url = "*", is = "dummy", fg = "black", bg = "red" },
+	{ url = "*/", is = "dummy", fg = "black", bg = "red" },
+]

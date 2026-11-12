@@ -1,0 +1,31 @@
+# Same values as colors.css. No recoloring in light mode.
+set recolor false
+
+set default-bg            "#EEF2F7"
+set default-fg            "#3D4B63"
+set statusbar-bg          "#DCE3EC"
+set statusbar-fg          "#3D4B63"
+set inputbar-bg           "#EEF2F7"
+set inputbar-fg           "#1F2A3D"
+set notification-bg       "#F8FAFC"
+set notification-fg       "#3D4B63"
+set notification-error-bg   "#F8FAFC"
+set notification-error-fg   "#BD3E30"
+set notification-warning-bg "#F8FAFC"
+set notification-warning-fg "#84592E"
+set completion-bg           "#F8FAFC"
+set completion-fg           "#3D4B63"
+set completion-group-bg     "#EEF2F7"
+set completion-group-fg     "#5C6A80"
+set completion-highlight-bg "#DCE3EC"
+set completion-highlight-fg "#2F6F9C"
+set index-bg              "#EEF2F7"
+set index-fg              "#3D4B63"
+set index-active-bg       "#DCE3EC"
+set index-active-fg       "#2F6F9C"
+set render-loading-bg     "#F8FAFC"
+set render-loading-fg     "#5C6A80"
+
+# search hits: sand, the current one the accent
+set highlight-color        "rgba(132,89,46,0.25)"
+set highlight-active-color "rgba(47,111,156,0.35)"

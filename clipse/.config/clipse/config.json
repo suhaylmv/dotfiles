@@ -1,0 +1,14 @@
+{
+    "maxHistory": 100,
+    "excludedApps": [
+        "1Password",
+        "Bitwarden",
+        "KeePassXC",
+        "LastPass",
+        "Dashlane",
+        "Password Safe"
+    ],
+    "imageDisplay": {
+        "type": "kitty"
+    }
+}

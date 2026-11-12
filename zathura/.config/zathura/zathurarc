@@ -1,0 +1,9 @@
+set font "Readex Pro 10"
+set selection-clipboard clipboard
+set adjust-open width
+
+set recolor-keephue true
+set recolor-reverse-video true
+
+# colors for the current mode
+include /home/suhaylmv/.local/state/theme/current/zathurarc

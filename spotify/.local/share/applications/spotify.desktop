@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Spotify
+Exec=spotify --enable-features=UseOzonePlatform --ozone-platform=wayland --force-device-scale-factor=1.1
+Icon=spotify
+Terminal=false
+Categories=Audio;Music;Player;

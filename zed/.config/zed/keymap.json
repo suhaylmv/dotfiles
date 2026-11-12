@@ -1,0 +1,184 @@
+[
+  {
+    "context": "Editor",
+    "bindings": {
+      "ctrl-w": "pane::CloseActiveItem",
+      "alt-space": "editor::ShowCompletions",
+      "alt-enter": "editor::ToggleCodeActions"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "alt-s": "workspace::SaveAll",
+      "alt-h": "pane::ActivatePreviousItem",
+      "alt-l": "pane::ActivateNextItem",
+      "alt-e": "workspace::ToggleRightDock",
+      "alt-shift-n": "project_panel::ToggleFocus",
+      "alt-f": "file_finder::Toggle",
+      "ctrl-alt-o": "workspace::Open",
+      "cmd-shift-r": [
+        "projects::OpenRecent",
+        {
+          "create_new_window": true
+        }
+      ]
+    }
+  },
+  {
+    "context": "ProjectPanel && not_editing",
+    "bindings": {
+      "a": "project_panel::NewFile",
+      "shift-a": "project_panel::NewDirectory",
+      "c": "project_panel::Copy",
+      "m": "project_panel::Cut",
+      "r": "project_panel::Rename",
+      "d": [
+        "project_panel::Trash",
+        {
+          "skip_prompt": false
+        }
+      ]
+    }
+  },
+  {
+    "context": "Pane && vim_mode != visual",
+    "bindings": {
+      "alt-1": [
+        "pane::ActivateItem",
+        0
+      ],
+      "alt-2": [
+        "pane::ActivateItem",
+        1
+      ],
+      "alt-3": [
+        "pane::ActivateItem",
+        2
+      ],
+      "alt-4": [
+        "pane::ActivateItem",
+        3
+      ],
+      "alt-5": [
+        "pane::ActivateItem",
+        4
+      ],
+      "alt-6": [
+        "pane::ActivateItem",
+        5
+      ],
+      "alt-7": [
+        "pane::ActivateItem",
+        6
+      ],
+      "alt-8": [
+        "pane::ActivateItem",
+        7
+      ],
+      "alt-9": [
+        "pane::ActivateItem",
+        8
+      ],
+      "alt-0": "pane::ActivateLastItem",
+      "shift-alt-h": "pane::SwapItemLeft",
+      "shift-alt-l": "pane::SwapItemRight"
+    }
+  },
+  {
+    "context": "VimControl && !menu",
+    "bindings": {
+      "space f": "file_finder::Toggle",
+      "space r": [
+        "projects::OpenRecent",
+        {
+          "create_new_window": true
+        }
+      ]
+    }
+  },
+  {
+    "context": "vim_mode != visual",
+    "bindings": {
+      "alt-j": "editor::MoveLineDown",
+      "alt-k": "editor::MoveLineUp",
+      "shift-alt-j": "editor::DuplicateLineDown",
+      "shift-alt-k": "editor::DuplicateLineUp"
+    }
+  },
+  {
+    "context": "Editor && showing_completions",
+    "bindings": {
+      "tab": "editor::ConfirmCompletion",
+      "shift-enter": "editor::ConfirmCompletionReplace",
+      "enter": "editor::Newline"
+    }
+  },
+  {
+    "bindings": {
+      "ctrl-p": "command_palette::Toggle"
+    }
+  },
+  {
+    "context": "Picker > Editor",
+    "bindings": {
+      "ctrl-p": null
+    }
+  },
+  {
+    "context": "Onboarding",
+    "bindings": {
+      "ctrl-=": null
+    }
+  },
+  {
+    "context": "Welcome",
+    "bindings": {
+      "ctrl-=": null
+    }
+  },
+  {
+    "bindings": {
+      "ctrl-t": "terminal_panel::Toggle"
+    }
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "alt-t": null
+    }
+  },
+  {
+    "bindings": {
+      "alt-n": "workspace::ToggleLeftDock"
+    }
+  },
+  {
+    "context": "Editor",
+    "bindings": {
+      "alt-shift-e": "outline_panel::ToggleFocus"
+    }
+  },
+  {
+    "bindings": {
+      "alt-=": "agent::ToggleFocus"
+    }
+  },
+  {
+    "bindings": {
+      "alt-.": "pane::SplitAndMoveRight"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "alt-o": "workspace::ActivatePaneRight"
+    }
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "alt-i": "workspace::ActivatePaneLeft"
+    }
+  }
+]

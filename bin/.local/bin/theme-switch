@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Switch the desktop between the dark and light theme.
+# Usage: theme-switch            toggle light/dark
+#        theme-switch dark|light|<any folder in ~/.config/theme>
+set -euo pipefail
+
+themes="$HOME/.config/theme"
+state="$HOME/.local/state/theme"
+current="$(basename "$(readlink "$state/current" 2>/dev/null || echo dark)")"
+
+# Any folder in ~/.config/theme is a theme (dark, light, test variants...).
+# "light" puts the system in light mode, every other theme in dark mode.
+mode="${1:-}"
+if [[ -z "$mode" ]]; then
+  [[ "$current" == light ]] && mode=dark || mode=light
+fi
+[[ -d "$themes/$mode" ]] || { echo "usage: theme-switch [$(ls "$themes" | tr '\n' '|' | sed 's/|$//')]" >&2; exit 1; }
+
+# 1. System preference (dconf: gsettings has no schemas under Hyprland)
+iface=/org/gnome/desktop/interface
+if [[ "$mode" != light ]]; then
+  dconf write $iface/color-scheme "'prefer-dark'"
+  dconf write $iface/gtk-theme    "'Adwaita-dark'"
+  dconf write $iface/icon-theme   "'Papirus-Dark'"
+else
+  dconf write $iface/color-scheme "'prefer-light'"
+  dconf write $iface/gtk-theme    "'Adwaita'"
+  dconf write $iface/icon-theme   "'Papirus'"
+fi
+
+# 2. Point the active theme at this mode's color files
+mkdir -p "$state"
+ln -sfn "$themes/$mode" "$state/current"
+
+# 3. This mode's wallpaper, if one was picked with `wall` (state/wallpaper-<mode>).
+#    state/wallpaper follows it, so hyprlock shows the same image, and
+#    Quickshell (Background.qml) redraws from it.
+if [[ -e "$state/wallpaper-$mode" ]]; then
+  ln -sfn "$(readlink -f "$state/wallpaper-$mode")" "$state/wallpaper"
+  timeout 2 qs ipc call wallpaper reload >/dev/null 2>&1 || true
+fi
+
+# 4. Reload everything that reads the color files
+# Quickshell (bar, panel, popups) re-reads colors.css (timeout: never hang if it's not running)
+timeout 2 qs ipc call theme reload >/dev/null 2>&1 || true
+hyprctl reload >/dev/null 2>&1 || true      # Hyprland re-reads its border colors
+
+# 5. Open Zathura windows re-read their config (it includes the mode's colors).
+#    Each window is its own D-Bus service, org.pwmt.zathura.PID-<pid>.
+for bus in $(busctl --user list --no-legend 2>/dev/null | awk '/^org\.pwmt\.zathura/ {print $1}'); do
+  busctl --user call "$bus" /org/pwmt/zathura org.pwmt.zathura SourceConfig >/dev/null 2>&1 || true
+done

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Usage: float-tui NAME TITLE COMMAND [ARGS...]
+# Opens COMMAND in a Ghostty window with class com.suhaylmv.NAME (floated in hyprland.lua).
+set -euo pipefail
+name="$1" title="$2"
+shift 2
+exec ghostty --class="com.suhaylmv.$name" --title="$title" \
+  --keybind=global:super+escape=unbind -e "$@"

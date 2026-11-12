@@ -1,0 +1,215 @@
+#!/usr/bin/env python3
+"""Recolor a built Catppuccin theme (CSS) to the dotfiles palette.
+
+Usage: scripts/recolor-catppuccin IN.css OUT.css [--dark-only] [--report]
+
+--dark-only: keep only the dark block, always on (no media query). Discord
+uses this: dark in both system modes. Discord's own light mode is mapped to
+the dark palette too, so it can't turn light either.
+
+IN is the local copy of Catppuccin's Discord theme
+(scripts/catppuccin-discord/catppuccin.theme.css, kept out of Vesktop's themes
+folder since only the recolored output is used): a dark block wrapped in
+@media (prefers-color-scheme: dark) and a light block in (... light).
+Every color in the dark block is mapped to DARK below, every color in the light
+block to LIGHT.
+
+How colors are matched, per color found in the file:
+  1. A named Catppuccin color (any flavor: the files mix flavors for Discord's
+     own light/dark mode) -> the dotfiles color for that ROLE. So "base" becomes
+     our surface whether it was Mocha's base or Latte's base.
+  2. A mix of two named colors, or of one with white or black (Catppuccin's
+     build blends e.g. red into the background for error banners, and Discord's
+     accent scales are the accent mixed with white/black) -> the same mix of
+     our colors.
+  3. Discord's fixed status colors -> STATUS below.
+  4. A shade of a named color (same hue within 15 degrees; Discord builds its
+     accent scales in HSL) -> our color's hue and saturation at the same
+     lightness step.
+  5. Anything else -> nearest named color, keeping the small difference.
+     --report lists these so they can be checked.
+
+This script is not a Stow package; run it from the repo root.
+Palette values are copied from theme/.config/theme/<mode>/colors.css.
+"""
+import colorsys
+import re
+import sys
+
+# ---- The dotfiles palette, per Catppuccin role -------------------------------
+# Roles without a direct dotfiles color get an in-between step (marked "step").
+DARK = {
+    "crust": "0B0C10", "mantle": "0F1015", "base": "15171D",          # crust, bg, surface
+    "surface0": "20232B", "surface1": "2B2F38", "surface2": "3A3F4A",  # overlay, steps
+    "overlay0": "5E6675", "overlay1": "6E7787", "overlay2": "7A8494",  # steps, muted
+    "subtext0": "8797A6", "subtext1": "94ABBB", "text": "A1BDCE",      # steps, fg
+    "rosewater": "E8EDF0",                                             # fg-strong
+    "blue": "92C6F0", "sapphire": "92C6F0", "sky": "AFDCFA",           # accent (+ lighter step)
+    "mauve": "81A0EA", "pink": "81A0EA",                               # blue: no pink/mauve
+    "lavender": "C6D0FF",                                              # purple (the one kept)
+    "teal": "A0E6DB", "green": "B9E29D",
+    "yellow": "F5DBC2", "peach": "F5DBC2", "flamingo": "F5DBC2",       # sand
+    "red": "F07F87", "maroon": "F69DA4",
+}
+LIGHT = {
+    "crust": "DBE1EA", "mantle": "EEF2F7", "base": "F8FAFC",          # crust, bg, surface (cards lighter)
+    "surface0": "DCE3EC", "surface1": "CDD5E1", "surface2": "BCC5D3",  # overlay, steps
+    "overlay0": "98A2B3", "overlay1": "7F8A9C", "overlay2": "5C6A80",  # steps, muted
+    "subtext0": "56647A", "subtext1": "4A5870", "text": "3D4B63",      # steps, fg
+    "rosewater": "1F2A3D",                                             # fg-strong
+    "blue": "2F6F9C", "sapphire": "2F6F9C", "sky": "2F7FB5",           # accent
+    "mauve": "3156B4", "pink": "3156B4",                               # blue
+    "lavender": "5C60C3",                                              # purple
+    "teal": "21776E", "green": "42792E",
+    "yellow": "84592E", "peach": "84592E", "flamingo": "84592E",       # sand
+    "red": "BD3E30", "maroon": "B03A3A",
+}
+# Discord's own status colors (online, idle, dnd, offline, streaming)
+STATUS = {
+    "45a366": ("green", "green"), "ffc04e": ("yellow", "yellow"),
+    "da3e44": ("red", "red"), "84858d": ("overlay2", "overlay2"),
+    "9147ff": ("lavender", "lavender"),
+}
+
+# ---- Catppuccin's four flavors (catppuccin.com/palette) ----------------------
+ROLES = ("rosewater flamingo pink mauve red maroon peach yellow green teal sky "
+         "sapphire blue lavender text subtext1 subtext0 overlay2 overlay1 overlay0 "
+         "surface2 surface1 surface0 base mantle crust").split()
+FLAVORS = {
+    "latte": "dc8a78 dd7878 ea76cb 8839ef d20f39 e64553 fe640b df8e1d 40a02b 179299 04a5e5 "
+             "209fb5 1e66f5 7287fd 4c4f69 5c5f77 6c6f85 7c7f93 8c8fa1 9ca0b0 acb0be bcc0cc "
+             "ccd0da eff1f5 e6e9ef dce0e8",
+    "frappe": "f2d5cf eebebe f4b8e4 ca9ee6 e78284 ea999c ef9f76 e5c890 a6d189 81c8be 99d1db "
+              "85c1dc 8caaee babbf1 c6d0f5 b5bfe2 a5adce 949cbb 838ba7 737994 626880 51576d "
+              "414559 303446 292c3c 232634",
+    "macchiato": "f4dbd6 f0c6c6 f5bde6 c6a0f6 ed8796 ee99a0 f5a97f eed49f a6da95 8bd5ca 91d7e3 "
+                 "7dc4e4 8aadf4 b7bdf8 cad3f5 b8c0e0 a5adcb 939ab7 8087a2 6e738d 5b6078 494d64 "
+                 "363a4f 24273a 1e2030 181926",
+    "mocha": "f5e0dc f2cdcd f5c2e7 cba6f7 f38ba8 eba0ac fab387 f9e2af a6e3a1 94e2d5 89dceb "
+             "74c7ec 89b4fa b4befe cdd6f4 bac2de a6adc8 9399b2 7f849c 6c7086 585b70 45475a "
+             "313244 1e1e2e 181825 11111b",
+}
+NAMED = {}  # hex -> (flavor, role)
+for flavor, hexes in FLAVORS.items():
+    for role, h in zip(ROLES, hexes.split()):
+        NAMED[h] = (flavor, role)
+
+def rgb(h): return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+def hexs(c): return "".join(f"{max(0, min(255, round(v))):02x}" for v in c)
+def dist(a, b): return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
+def mix(a, b, t): return tuple(x + (y - x) * t for x, y in zip(a, b))
+
+PURE = [("white", (255, 255, 255)), ("black", (0, 0, 0))]
+
+def pal_rgb(pal, role):
+    return dict(PURE)[role] if role in ("white", "black") else rgb(pal[role])
+
+def resolve(h, pal, how):
+    """Map one 6-digit hex (lowercase) to the palette; record how in `how`."""
+    if h in NAMED:
+        how[h] = "named " + "/".join(NAMED[h])
+        return pal[NAMED[h][1]]
+    if h in STATUS:
+        how[h] = "status"
+        return pal[STATUS[h][0]]
+    u = rgb(h)
+    best = None  # (residual, role_a, role_b, t)
+    for flavor, hexes in FLAVORS.items():
+        cols = list(zip(ROLES, (rgb(x) for x in hexes.split()))) + PURE
+        for i, (ra, a) in enumerate(cols):
+            for rb, b in cols[i + 1:]:
+                d = [y - x for x, y in zip(a, b)]
+                n = sum(v * v for v in d)
+                if not n:
+                    continue
+                t = max(0.0, min(1.0, sum((p - x) * v for p, x, v in zip(u, a, d)) / n))
+                r = dist(u, mix(a, b, t))
+                if best is None or r < best[0]:
+                    best = (r, ra, rb, t, flavor)
+    if best and best[0] <= 3.0:
+        r, ra, rb, t, flavor = best
+        how[h] = f"mix {flavor} {ra}+{rb} @{t:.2f}"
+        return hexs(mix(pal_rgb(pal, ra), pal_rgb(pal, rb), t))
+    # Same hue family as a named color: keep the lightness step, take our hue/saturation
+    hu, lu, su = colorsys.rgb_to_hls(*(v / 255 for v in u))
+    if su >= 0.25:
+        fam = []
+        for k, (flavor, role) in NAMED.items():
+            hk, lk, sk = colorsys.rgb_to_hls(*(v / 255 for v in rgb(k)))
+            dh = min(abs(hu - hk), 1 - abs(hu - hk)) * 360
+            if sk >= 0.25 and dh <= 15:
+                fam.append((dh, dist(u, rgb(k)), k, hk, lk, sk))
+        if fam:
+            dh, _, k, hk, lk, sk = min(fam)
+            ht, lt, st = colorsys.rgb_to_hls(*(v / 255 for v in rgb(pal[NAMED[k][1]])))
+            l = max(0.0, min(1.0, lu + (lt - lk)))
+            sat = max(0.0, min(1.0, su * st / sk))
+            how[h] = f"shade {'/'.join(NAMED[k])} L{lu:.2f}->{l:.2f}"
+            return hexs(v * 255 for v in colorsys.hls_to_rgb(ht, l, sat))
+    near = min(NAMED, key=lambda k: dist(u, rgb(k)))
+    off = [x - y for x, y in zip(u, rgb(near))]
+    how[h] = f"NEAREST {'/'.join(NAMED[near])} off {off}"
+    return hexs([c + o for c, o in zip(rgb(pal[NAMED[near][1]]), off)])
+
+def recolor(css, pal, how):
+    cache = {}
+    def one(h):
+        h = h.lower()
+        if h not in cache:
+            cache[h] = resolve(h, pal, how)
+        return cache[h]
+    css = re.sub(r"#([0-9a-fA-F]{6})\b", lambda m: "#" + one(m.group(1)), css)
+    def rgba(m):
+        c = one(hexs(int(v) for v in m.group(2).split(",")[:3]))
+        r, g, b = rgb(c)
+        rest = m.group(2).split(",")[3:]
+        return f"{m.group(1)}({r}, {g}, {b}{',' + ','.join(rest) if rest else ''})"
+    return re.sub(r"(rgba?)\(\s*(\d+\s*,\s*\d+\s*,\s*\d+(?:\s*,\s*[\d.]+)?)\s*\)", rgba, css)
+
+def main():
+    if len(sys.argv) < 3:
+        sys.exit(__doc__)
+    src = open(sys.argv[1]).read()
+    dark_at = src.index("@media (prefers-color-scheme: dark)")
+    light_at = src.index("@media (prefers-color-scheme: light)")
+    header_end = src.rindex("*/", 0, dark_at) + 2
+    how_d, how_l = {}, {}
+    dark_only = "--dark-only" in sys.argv
+    if dark_only:
+        # the CSS inside "@media (prefers-color-scheme: dark) { ... }"
+        inner = src[src.index("{", dark_at) + 1:src.rindex("\n}", dark_at, light_at)]
+        body = "\n/* Mocha, recolored to the dark palette; applies in both system modes */\n" \
+            + recolor(inner, DARK, how_d) + "\n"
+    else:
+        body = (src[header_end:dark_at]
+                + recolor(src[dark_at:light_at], DARK, how_d)
+                + recolor(src[light_at:], LIGHT, how_l))
+    mode_note = ("always dark" if dark_only
+                 else "dark/light follows theme-switch")
+    header = f"""/**
+ * @name Excalibur (Catppuccin)
+ * @description Catppuccin's Discord theme recolored to the dotfiles palette; {mode_note}.
+ * @author catppuccin, recolored by suhaylmv
+ * @version 1.0.0
+ */
+
+/* GENERATED by scripts/recolor-catppuccin from catppuccin.theme.css:
+     scripts/recolor-catppuccin scripts/catppuccin-discord/catppuccin.theme.css \\
+       vesktop/.config/vesktop/themes/excalibur-catppuccin.theme.css {'--dark-only' if dark_only else ''}
+   Don't edit by hand: change the palette in that script and run it again.
+   Based on Catppuccin for Discord, MIT license (full text in
+   scripts/catppuccin-discord/catppuccin.theme.css in the dotfiles). */
+"""
+    open(sys.argv[2], "w").write(header + body)
+    if "--report" in sys.argv:
+        for name, how in (("DARK", how_d), ("LIGHT", how_l))[:1 if dark_only else 2]:
+            kinds = {}
+            for v in how.values():
+                kinds[v.split()[0]] = kinds.get(v.split()[0], 0) + 1
+            print(f"{name}: {len(how)} colors: {kinds}")
+            for h, v in sorted(how.items()):
+                if v.startswith("NEAREST"):
+                    print(f"  #{h}: {v}")
+
+if __name__ == "__main__":
+    main()

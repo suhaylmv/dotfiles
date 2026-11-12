@@ -1,0 +1,15 @@
+/* Light palette. Every color is >= 4.5:1 against bg and surface. */
+@define-color crust     #DBE1EA;
+@define-color bg        #EEF2F7;
+@define-color surface   #F8FAFC;
+@define-color overlay   #DCE3EC;
+@define-color fg        #3D4B63;
+@define-color fg-strong #1F2A3D;
+@define-color muted     #5C6A80;
+@define-color accent    #2F6F9C;
+@define-color blue      #3156B4;
+@define-color teal      #21776E;
+@define-color purple    #5C60C3;
+@define-color sand      #84592E;
+@define-color green     #42792E;
+@define-color red       #BD3E30;

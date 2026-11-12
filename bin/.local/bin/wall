@@ -1,0 +1,106 @@
+#!/usr/bin/env bash
+# Wallpapers from the command line. The picker is Quickshell's carousel
+# (SUPER+SHIFT+W, or >wall in the launcher); it reads `wall --list`.
+#
+# Usage: wall              open the picker
+#        wall FILE         set FILE
+#        wall --random     pick one at random
+#        wall --list       for the Quickshell picker: path<TAB>category<TAB>thumbnail<TAB>name
+#                          per line (builds missing thumbnails first)
+#        add --both        to set it for dark AND light mode (default: current mode)
+#
+# Folders: WALLPAPER_DIRS (colon-separated).
+set -euo pipefail
+
+state="$HOME/.local/state/theme"
+IFS=: read -ra dirs <<< "${WALLPAPER_DIRS:-$HOME/repos/rice/wallpapers:$HOME/repos/rice/wallpapers-private:$HOME/Pictures/Wallpapers}"
+mode="$(basename "$(readlink "$state/current" 2>/dev/null || echo dark)")"
+cache="${XDG_CACHE_HOME:-$HOME/.cache}/wall"
+
+list() {
+  local existing=()
+  for d in "${dirs[@]}"; do [[ -d "$d" ]] && existing+=("$d"); done
+  [[ ${#existing[@]} -gt 0 ]] || { echo "wall: no wallpaper folders found (${dirs[*]})" >&2; exit 1; }
+  find -L "${existing[@]}" -type f \( -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.png' \
+    -o -iname '*.webp' -o -iname '*.gif' \) | sort
+}
+
+apply() {
+  local file modes
+  file="$(realpath "$1")"
+  [[ "$2" == both ]] && modes=(dark light) || modes=("$mode")
+  mkdir -p "$state"
+  for m in "${modes[@]}"; do ln -sfn "$file" "$state/wallpaper-$m"; done
+  ln -sfn "$file" "$state/wallpaper"
+  # Quickshell draws the wallpaper (Background.qml) from state/wallpaper
+  timeout 2 qs ipc call wallpaper reload >/dev/null 2>&1 || true
+}
+
+# A 1280px-wide JPEG copy for the picker and the live preview, named after
+# the file's path, size and modification time, so an edited or replaced
+# wallpaper gets a fresh one.
+thumb_path() {   # FILE SIZE:MTIME
+  local key
+  key="$(printf '%s' "$1:$2" | sha1sum)"
+  echo "$cache/${key:0:16}.jpg"
+}
+make_thumb() {   # FILE OUT
+  ffmpeg -v error -y -i "$1" -frames:v 1 -vf "scale='min(1280,iw)':-2" -q:v 3 "$2.tmp.jpg" \
+    && mv "$2.tmp.jpg" "$2" || rm -f "$2.tmp.jpg"
+}
+
+# --list, one line per wallpaper: path<TAB>category<TAB>thumbnail<TAB>name.
+# The path is the real one (symlinks resolved), like the state link that
+# apply() writes, so Quickshell can match the wallpaper on screen to its
+# entry; the name stays the one in the folder. The category is the first
+# folder under its WALLPAPER_DIRS root (images directly in a root get the
+# root's folder name). One stat and one realpath for the whole list; only
+# missing thumbnails start ffmpeg, in parallel. Unsorted: Quickshell sorts.
+list_entries() {
+  local files real meta thumbs=() missing=() i file d rel cat out
+  mapfile -t files < <(list)
+  ((${#files[@]})) || return 0
+  mapfile -t real < <(realpath -- "${files[@]}")
+  mapfile -t meta < <(stat -L -c '%s:%Y' -- "${files[@]}")
+  for i in "${!files[@]}"; do
+    thumbs[i]="$(thumb_path "${files[i]}" "${meta[i]}")"
+    [[ -s "${thumbs[i]}" ]] || missing+=("${files[i]}" "${thumbs[i]}")
+  done
+  if ((${#missing[@]})); then
+    mkdir -p "$cache"
+    printf '%s\0' "${missing[@]}" | nice -n 10 xargs -0 -n 2 -P "$(nproc)" "$0" --thumb
+  fi
+  for i in "${!files[@]}"; do
+    file="${files[i]}" cat=""
+    for d in "${dirs[@]}"; do
+      [[ "$file" == "$d"/* ]] || continue
+      rel="${file#"$d"/}"
+      [[ "$rel" == */* ]] && cat="${rel%%/*}" || cat="${d##*/}"
+      break
+    done
+    out="${thumbs[i]}"
+    [[ -s "$out" ]] || out="$file"     # ffmpeg failed: the original
+    printf '%s\t%s\t%s\t%s\n' "${real[i]}" "$cat" "$out" "${file##*/}"
+  done
+}
+
+# Internal entry point: one thumbnail, run in parallel by --list
+[[ "${1:-}" == --thumb ]]   && { make_thumb "$2" "$3"; exit; }
+[[ "${1:-}" == --list ]]    && { list_entries; exit; }
+
+target=current
+args=()
+for a in "$@"; do
+  case "$a" in
+    --both)      target=both ;;
+    -h|--help)   sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit ;;
+    *)           args+=("$a") ;;
+  esac
+done
+
+case "${args[0]:-}" in
+  "")       timeout 2 qs ipc call launcher wallpaper ;;
+  --random) apply "$(list | shuf -n 1)" "$target" ;;
+  *)        [[ -f "${args[0]}" ]] || { echo "wall: no such file: ${args[0]}" >&2; exit 1; }
+            apply "${args[0]}" "$target" ;;
+esac

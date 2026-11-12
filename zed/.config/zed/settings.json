@@ -1,0 +1,164 @@
+{
+  "base_keymap": "JetBrains",
+  "vim_mode": true,
+  "cli_default_open_behavior": "existing_window",
+  "load_direnv": "direct",
+
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "Insomnia"
+  },
+  "icon_theme": {
+    "mode": "dark",
+    "light": "Catppuccin Mocha",
+    "dark": "Catppuccin Mocha"
+  },
+  "ui_font_family": "Readex Pro",
+  "ui_font_size": 17.0,
+  "buffer_font_family": "JetBrains Mono",
+  "buffer_font_size": 17.0,
+  "buffer_line_height": {
+    "custom": 1.71
+  },
+  "cursor_blink": false,
+  "soft_wrap": "editor_width",
+  "tab_size": 2,
+
+  "project_panel": {
+    "dock": "left"
+  },
+  "git_panel": {
+    "dock": "left"
+  },
+  "outline_panel": {
+    "dock": "right"
+  },
+  "collaboration_panel": {
+    "dock": "left",
+    "button": false
+  },
+  "scrollbar": {
+    "git_diff": false
+  },
+  "git": {
+    "inline_blame": {
+      "enabled": false
+    }
+  },
+  "file_scan_exclusions": [
+    "**/*_templ.go"
+  ],
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false
+  },
+
+  "show_edit_predictions": true,
+  "edit_predictions": {
+    "provider": "zed",
+    "mode": "subtle",
+    "enabled_in_text_threads": false
+  },
+  "agent": {
+    "dock": "left",
+    "default_profile": "ask",
+    "default_model": {
+      "provider": "anthropic",
+      "model": "claude-opus-4-5-thinking-latest"
+    },
+    "tool_permissions": {
+      "default": "allow"
+    },
+    "use_modifier_to_send": false,
+    "play_sound_when_agent_done": "always"
+  },
+
+  "languages": {
+    "Python": {
+      "language_servers": ["basedpyright", "ruff"],
+      "format_on_save": "on",
+      "code_actions_on_format": {
+        "source.organizeImports.ruff": true
+      },
+      "formatter": {
+        "language_server": {
+          "name": "ruff"
+        }
+      }
+    },
+    "TypeScript": {
+      "show_edit_predictions": true
+    },
+    "Nix": {
+      "language_servers": ["nixd", "!nil"]
+    },
+    "Templ": {
+      "language_servers": [
+        "templ",
+        "emmet-language-server",
+        "tailwindcss-language-server",
+        "vscode-html-language-server"
+      ]
+    }
+  },
+  "prettier": {
+    "semi": true,
+    "useTabs": true,
+    "tabWidth": 2,
+    "singleQuote": true,
+    "jsxSingleQuote": true,
+    "arrowParens": "avoid",
+    "trailingComma": "all"
+  },
+  "lsp": {
+    "protobuf-language-server": {
+      "binary": {
+        "path": "protols"
+      }
+    },
+    "tailwindcss-language-server": {
+      "settings": {
+        "includeLanguages": {
+          "templ": "html"
+        },
+        "classFunctions": ["cva", "cx"],
+        "experimental": {
+          "classRegex": [
+            "[cls|className]\\s\\:\\=\\s\"([^\"]*)",
+            "class=\\\"([^\\\"]*)\\\"",
+            "className=\\\"([^\\\"]*)\\\""
+          ]
+        }
+      }
+    },
+    "nixd": {
+      "settings": {
+        "nixpkgs": {
+          "expr": "import (builtins.getFlake \"/home/suhaylmv/repos/rice/dotfiles/nixos\").inputs.nixpkgs { }"
+        },
+        "options": {
+          "nixos": {
+            "expr": "(builtins.getFlake \"/home/suhaylmv/repos/rice/dotfiles/nixos\").nixosConfigurations.excalibur.options"
+          }
+        },
+        "formatting": {
+          "command": ["nixfmt"]
+        }
+      }
+    },
+    "discord_presence": {
+      "initialization_options": {
+        "state": "Working on {relative_file_path}",
+        "idle": {
+          "timeout": 9999999999999
+        },
+        "languages": {
+          "prisma": {
+            "large_image": "{base_icons_url}/prisma.png"
+          }
+        }
+      }
+    }
+  }
+}

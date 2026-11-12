@@ -1,0 +1,15 @@
+window-inherit-working-directory = true
+working-directory = home
+window-decoration = true
+gtk-titlebar-hide-when-maximized = true
+gtk-tabs-location = hidden
+confirm-close-surface = false
+
+# NvimDark with the palette's backgrounds (themes/nvimdark-excalibur). Dark only.
+theme = nvimdark-excalibur
+font-size = 13
+mouse-hide-while-typing = true
+
+keybind = global:super+escape=toggle_quick_terminal
+quick-terminal-position = top
+quick-terminal-animation-duration = 0.15

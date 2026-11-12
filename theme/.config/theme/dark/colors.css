@@ -1,0 +1,16 @@
+/* Dark palette. hyprlock.conf, hyprland.lua, zathurarc and
+   scripts/recolor-catppuccin copy these values by hand. */
+@define-color crust     #0B0C10;  /* darkest: behind panels */
+@define-color bg        #0F1015;  /* bar, panels */
+@define-color surface   #15171D;  /* cards, tooltips */
+@define-color overlay   #20232B;  /* hover, borders, slider tracks */
+@define-color fg        #A1BDCE;  /* main text: pale steel blue */
+@define-color fg-strong #E8EDF0;  /* titles, emphasis */
+@define-color muted     #7A8494;  /* secondary text, inactive */
+@define-color accent    #92C6F0;  /* sky blue: hover, active, "on" */
+@define-color blue      #81A0EA;  /* deeper blue, for variety */
+@define-color teal      #A0E6DB;
+@define-color purple    #C6D0FF;  /* lavender: the only purple, used rarely */
+@define-color sand      #F5DBC2;  /* warnings */
+@define-color green     #B9E29D;  /* good states only (battery, success) */
+@define-color red       #F07F87;  /* errors, critical */
