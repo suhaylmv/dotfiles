@@ -6,7 +6,7 @@ import Quickshell.Hyprland
 import Quickshell.Bluetooth
 import Quickshell.Services.Pipewire
 
-// The dashboard (SUPER+V or the bell in the bar). Left: quick settings,
+// The dashboard (SUPER+F or the bell in the bar). Left: quick settings,
 // sliders, media, calendar. Right: notifications. Click outside or Esc closes.
 PanelWindow {
     id: win

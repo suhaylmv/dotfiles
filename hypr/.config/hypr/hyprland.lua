@@ -276,9 +276,9 @@ local mainMod = "SUPER"
 
 -- APPS
 hl.bind("CTRL + SPACE", hl.dsp.exec_cmd("timeout 1 qs ipc call launcher toggle"), { description = "Apps: Launcher" })   -- Quickshell launcher
-hl.bind(mainMod .. " + T", hl.dsp.exec_cmd(terminal), { description = "Apps: Terminal" })
-hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd("~/.local/bin/theme-switch"), { description = "Apps: Dark / light theme" })
-hl.bind(mainMod .. " + SHIFT + W", hl.dsp.exec_cmd("timeout 1 qs ipc call launcher wallpaper"), { description = "Apps: Wallpaper" })   -- wallpaper carousel (the launcher's >wall)
+hl.bind(mainMod .. " + SHIFT + T", hl.dsp.exec_cmd(terminal), { description = "Apps: Terminal" })   -- SUPER+T is the terminal scratchpad
+-- Dark / light theme has no bind: ">theme" in the launcher (or theme-switch)
+hl.bind(mainMod .. " + asciitilde", hl.dsp.exec_cmd("timeout 1 qs ipc call launcher wallpaper"), { description = "Apps: Wallpaper" })   -- wallpaper carousel (the launcher's >wall)
 hl.bind(mainMod .. " + SHIFT + slash", hl.dsp.exec_cmd("timeout 1 qs ipc call keybinds toggle"), { description = "Apps: Keybinds (this list)" })   -- SUPER+? : Quickshell cheat sheet
 -- Power tiles: Lock / Reboot / Power off, Lock preselected (SUPER+M, Enter
 -- locks). If Quickshell isn't running, lock directly; pidof stops a second
@@ -293,8 +293,9 @@ local function grab(target)
     return "mkdir -p " .. shots .. " && grimblast --freeze --notify copysave " .. target .. " " .. shot_name
 end
 hl.bind("Print",                         hl.dsp.exec_cmd(grab("area")), { description = "Screenshots: Region or window" })    -- drag a region or click a window
-hl.bind(mainMod .. " + SHIFT + S",       hl.dsp.exec_cmd(grab("area")), { description = "Screenshots: Region or window" })    -- same, for keyboards without Print
+hl.bind(mainMod .. " + V",               hl.dsp.exec_cmd(grab("area")), { description = "Screenshots: Region or window" })    -- same, for keyboards without Print
 hl.bind("SHIFT + Print",                 hl.dsp.exec_cmd(grab("output")), { description = "Screenshots: Whole screen" })  -- whole screen
+hl.bind(mainMod .. " + SHIFT + V",       hl.dsp.exec_cmd(grab("output")), { description = "Screenshots: Whole screen" })  -- same, without Print
 hl.bind(mainMod .. " + Print",           hl.dsp.exec_cmd(                  -- region, then annotate in satty
     "mkdir -p " .. shots .. " && grimblast --freeze save area - | satty --filename - " ..
     "--output-filename " .. shots .. "/%Y-%m-%d_%H-%M-%S-annotated.png " ..
@@ -315,19 +316,26 @@ hl.on("workspace.created", function(ws)
     end
 end)
 
-hl.bind(mainMod .. " + S",   hl.dsp.workspace.toggle_special("term"), { description = "Scratchpads: Terminal" })
-hl.bind(mainMod .. " + TAB", hl.dsp.workspace.toggle_special("music"), { description = "Scratchpads: Music" })
-hl.bind(mainMod .. " + R",   hl.dsp.workspace.toggle_special("files"), { description = "Scratchpads: Files" })
-hl.bind(mainMod .. " + A",   hl.dsp.workspace.toggle_special("common"), { description = "Scratchpads: Common" })
+-- term/music/files start their app when first opened; common and second start empty
+hl.bind(mainMod .. " + T",   hl.dsp.workspace.toggle_special("term"),   { description = "Scratchpads: Terminal" })
+hl.bind(mainMod .. " + TAB", hl.dsp.workspace.toggle_special("music"),  { description = "Scratchpads: Music" })
+hl.bind(mainMod .. " + A",   hl.dsp.workspace.toggle_special("files"),  { description = "Scratchpads: Files" })
+hl.bind(mainMod .. " + R",   hl.dsp.workspace.toggle_special("common"), { description = "Scratchpads: Common" })
+hl.bind(mainMod .. " + S",   hl.dsp.workspace.toggle_special("second"), { description = "Scratchpads: Second" })
+hl.bind(mainMod .. " + CTRL + T",  hl.dsp.window.move({ workspace = "special:term" }),   { description = "Scratchpads: Move window to Terminal" })
+hl.bind(mainMod .. " + SHIFT + A", hl.dsp.window.move({ workspace = "special:files" }),  { description = "Scratchpads: Move window to Files" })
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.window.move({ workspace = "special:common" }), { description = "Scratchpads: Move window to Common" })
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:second" }), { description = "Scratchpads: Move window to Second" })
 
 -- WINDOWS
 hl.bind(mainMod .. " + C", hl.dsp.focus({ workspace = "previous" }), { description = "Workspaces: Previous workspace" })
 hl.bind(mainMod .. " + Q", hl.dsp.window.close(), { description = "Windows: Close" })
+hl.bind(mainMod .. " + SHIFT + Q", hl.dsp.window.kill(), { description = "Windows: Force kill" })   -- kills the process, for apps that ignore Close
 hl.bind(mainMod .. " + D", hl.dsp.window.float({ action = "toggle" }), { description = "Windows: Toggle floating" })
-hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("timeout 1 qs ipc call panel toggle"), { description = "Apps: Dashboard" })
+hl.bind(mainMod .. " + F", hl.dsp.exec_cmd("timeout 1 qs ipc call panel toggle"), { description = "Apps: Dashboard" })
 hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("timeout 1 qs ipc call clipboard toggle"), { description = "Apps: Clipboard history" })   -- clipboard history
-hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("timeout 1 qs ipc call panel clearNotifs"), { description = "Apps: Clear notifications" })
-hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Windows: Fullscreen" })
+hl.bind(mainMod .. " + SHIFT + F", hl.dsp.exec_cmd("timeout 1 qs ipc call panel clearNotifs"), { description = "Apps: Clear notifications" })
+hl.bind(mainMod .. " + SHIFT + W", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Windows: Fullscreen" })
 hl.bind(mainMod .. " + W", hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "Windows: Maximize" })
 hl.bind(mainMod .. " + P", hl.dsp.layout("togglesplit"), { description = "Windows: Toggle split direction" })
 
@@ -383,7 +391,7 @@ local osd_brightness = "; timeout 1 qs ipc call osd brightness"
 -- -n takes a raw value only ("-n5%" reads as 5), and the default 1 is black.
 local min_brightness = "-n655 "
 
-hl.bind(mainMod .. " + asciitilde", hl.dsp.exec_cmd("brightnessctl set 5%+" .. osd_brightness), { repeating = true, description = "Media: Brightness up" })
+hl.bind(mainMod .. " + emdash", hl.dsp.exec_cmd("brightnessctl set 5%+" .. osd_brightness), { repeating = true, description = "Media: Brightness up" })
 hl.bind(mainMod .. " + backslash", hl.dsp.exec_cmd("brightnessctl " .. min_brightness .. "set 5%-" .. osd_brightness), { repeating = true, description = "Media: Brightness down" })
 
 -- Laptop media keys

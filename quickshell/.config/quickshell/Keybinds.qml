@@ -104,7 +104,7 @@ Singleton {
     readonly property var names: ({
         "SPACE": "Space", "TAB": "Tab", "RETURN": "Enter", "ESCAPE": "Esc", "Print": "Print",
         "slash": "/", "comma": ",", "period": ".", "grave": "`", "apostrophe": "'",
-        "braceright": "}", "braceleft": "{", "asciitilde": "~", "backslash": "\\",
+        "braceright": "}", "braceleft": "{", "asciitilde": "~", "backslash": "\\", "emdash": "—",
         "mouse:272": "Left click", "mouse:273": "Right click"
     })
     function keyName(k) {
