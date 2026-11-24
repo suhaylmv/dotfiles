@@ -112,8 +112,10 @@ hl.animation({ leaf = "fade",       enabled = true, speed = 3,  bezier = "md3_de
 hl.animation({ leaf = "layers",     enabled = true, speed = 2,  bezier = "md3_decel", style = "fade" })
 hl.animation({ leaf = "workspaces", enabled = true, speed = 1,  bezier = "md3_decel", style = "slide" })
 
-hl.animation({ leaf = "specialWorkspaceIn",  enabled = true, speed = 3, bezier = "md3_decel", style = "slidefadevert -50%" })
-hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 3, bezier = "md3_decel", style = "slidefadevert -50%" })
+-- Scratchpads: a plain fade, no slide. Speed is in 100ms units, so 200ms in
+-- and 150ms out, on an ease-out curve (same feel as the Quickshell popups).
+hl.animation({ leaf = "specialWorkspaceIn",  enabled = true, speed = 2,   bezier = "md3_decel", style = "fade" })
+hl.animation({ leaf = "specialWorkspaceOut", enabled = true, speed = 1.5, bezier = "md3_decel", style = "fade" })
 
 hl.animation({ leaf = "border",      enabled = true, speed = 12, bezier = "md3_decel" })
 hl.animation({ leaf = "borderangle", enabled = true, speed = 50, bezier = "md3_decel", style = "loop" })
@@ -297,7 +299,7 @@ hl.bind(mainMod .. " + Print",           hl.dsp.exec_cmd(                  -- re
     "mkdir -p " .. shots .. " && grimblast --freeze save area - | satty --filename - " ..
     "--output-filename " .. shots .. "/%Y-%m-%d_%H-%M-%S-annotated.png " ..
     "--copy-command wl-copy --early-exit"), { description = "Screenshots: Region, then annotate" })
-hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("hyprpicker -a"), { description = "Apps: Color picker" })   -- color picker: click a pixel, its hex goes to the clipboard
+hl.bind(mainMod .. " + SHIFT + P", hl.dsp.exec_cmd("hyprpicker -a"), { description = "Apps: Color picker" })   -- color picker: click a pixel, its hex goes to the clipboard
 
 -- SPECIAL WORKSPACES
 local special_apps = {
@@ -323,7 +325,7 @@ hl.bind(mainMod .. " + C", hl.dsp.focus({ workspace = "previous" }), { descripti
 hl.bind(mainMod .. " + Q", hl.dsp.window.close(), { description = "Windows: Close" })
 hl.bind(mainMod .. " + D", hl.dsp.window.float({ action = "toggle" }), { description = "Windows: Toggle floating" })
 hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("timeout 1 qs ipc call panel toggle"), { description = "Apps: Dashboard" })
-hl.bind(mainMod .. " + SHIFT + V", hl.dsp.exec_cmd("timeout 1 qs ipc call clipboard toggle"), { description = "Apps: Clipboard history" })   -- clipboard history
+hl.bind(mainMod .. " + SHIFT + C", hl.dsp.exec_cmd("timeout 1 qs ipc call clipboard toggle"), { description = "Apps: Clipboard history" })   -- clipboard history
 hl.bind(mainMod .. " + B", hl.dsp.exec_cmd("timeout 1 qs ipc call panel clearNotifs"), { description = "Apps: Clear notifications" })
 hl.bind(mainMod .. " + F", hl.dsp.window.fullscreen({ mode = "fullscreen" }), { description = "Windows: Fullscreen" })
 hl.bind(mainMod .. " + W", hl.dsp.window.fullscreen({ mode = "maximized" }), { description = "Windows: Maximize" })

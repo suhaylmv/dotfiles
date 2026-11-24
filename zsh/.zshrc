@@ -69,8 +69,7 @@ zstyle ':fzf-tab:complete:cd:*' fzf-preview 'ls --color $realpath'
 
 # Aliases
 alias ls='ls --color'
-#alias vim='nvim'
-alias c='clear'
+alias t.='ghostty +new-window --working-directory="$PWD"'
 
 # Shell integrations
 # eval "$(fzf --zsh)"
