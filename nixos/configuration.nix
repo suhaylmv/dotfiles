@@ -181,6 +181,19 @@
     anki
     telegram-desktop
     obs-studio
+    # SCID is Tk, an X11 app: Hyprland gives X apps real pixels
+    # (xwayland.force_zero_scaling, so they're sharp), and Tk then has to
+    # scale itself. XWayland always reports 96 dpi (Tk scaling 1.333 px per
+    # point); x1.33 for the monitor = 1.773. This replaces the stock `scid`
+    # launcher, which runs SCID's start.tcl the same way, minus the scaling.
+    (writeShellScriptBin "scid" ''
+      export TCLLIBPATH="${tk}/lib/tk8.6''${TCLLIBPATH:+ $TCLLIBPATH}"
+      exec ${scid}/bin/tkscid ${writeText "scid-scaled.tcl" ''
+        package require Tk 8.6
+        tk scaling 1.773
+        source ${scid}/share/tcl/start.tcl
+      ''} "$@"
+    '')
 
     # dev tools
     zed-editor

@@ -95,6 +95,13 @@ hl.config({
         disable_hyprland_logo = true,
         disable_splash_rendering = true,
     },
+
+    -- X11 apps (SCID/Tk) can't do fractional scaling: by default Hyprland
+    -- renders them at 1x and stretches them by 1.33, which blurs them.
+    -- This hands them the real pixels instead; they must scale themselves.
+    xwayland = {
+        force_zero_scaling = true,
+    },
 })
 
 ----------------------
@@ -317,15 +324,15 @@ hl.on("workspace.created", function(ws)
 end)
 
 -- term/music/files start their app when first opened; common and second start empty
-hl.bind(mainMod .. " + T",   hl.dsp.workspace.toggle_special("term"),   { description = "Scratchpads: Terminal" })
 hl.bind(mainMod .. " + TAB", hl.dsp.workspace.toggle_special("music"),  { description = "Scratchpads: Music" })
-hl.bind(mainMod .. " + A",   hl.dsp.workspace.toggle_special("files"),  { description = "Scratchpads: Files" })
+hl.bind(mainMod .. " + A",   hl.dsp.workspace.toggle_special("second"), { description = "Scratchpads: Second" })
 hl.bind(mainMod .. " + R",   hl.dsp.workspace.toggle_special("common"), { description = "Scratchpads: Common" })
-hl.bind(mainMod .. " + S",   hl.dsp.workspace.toggle_special("second"), { description = "Scratchpads: Second" })
-hl.bind(mainMod .. " + CTRL + T",  hl.dsp.window.move({ workspace = "special:term" }),   { description = "Scratchpads: Move window to Terminal" })
-hl.bind(mainMod .. " + SHIFT + A", hl.dsp.window.move({ workspace = "special:files" }),  { description = "Scratchpads: Move window to Files" })
+hl.bind(mainMod .. " + S",   hl.dsp.workspace.toggle_special("files"),  { description = "Scratchpads: Files" })
+hl.bind(mainMod .. " + T",   hl.dsp.workspace.toggle_special("term"),   { description = "Scratchpads: Terminal" })
+hl.bind(mainMod .. " + SHIFT + A", hl.dsp.window.move({ workspace = "special:second" }), { description = "Scratchpads: Move window to Second" })
 hl.bind(mainMod .. " + SHIFT + R", hl.dsp.window.move({ workspace = "special:common" }), { description = "Scratchpads: Move window to Common" })
-hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:second" }), { description = "Scratchpads: Move window to Second" })
+hl.bind(mainMod .. " + SHIFT + S", hl.dsp.window.move({ workspace = "special:files" }),  { description = "Scratchpads: Move window to Files" })
+hl.bind(mainMod .. " + CTRL + T",  hl.dsp.window.move({ workspace = "special:term" }),   { description = "Scratchpads: Move window to Terminal" })
 
 -- WINDOWS
 hl.bind(mainMod .. " + C", hl.dsp.focus({ workspace = "previous" }), { description = "Workspaces: Previous workspace" })
